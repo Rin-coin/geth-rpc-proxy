@@ -1,9 +1,16 @@
 from flask import Flask, request, jsonify
 import requests
+from dotenv import load_dotenv
+import os
+
+# .envファイルから環境変数を読み込む
+load_dotenv()
+
+# 環境変数からGethのRPCアドレスとプロキシサーバーのポートを取得
+GETH_RPC_URL = os.getenv("GETH_RPC_URL", "http://localhost:8545")
+PROXY_PORT = int(os.getenv("PROXY_PORT", 8080))
 
 app = Flask(__name__)
-
-GETH_RPC_URL = "http://localhost:8545"  # GethのRPCエンドポイント
 
 @app.route("/", methods=["POST"])
 def proxy():
@@ -28,4 +35,4 @@ def proxy():
     return jsonify(response.json())
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
+    app.run(host="0.0.0.0", port=PROXY_PORT)
