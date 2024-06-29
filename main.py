@@ -14,25 +14,35 @@ app = Flask(__name__)
 
 @app.route("/", methods=["POST"])
 def proxy():
-    # リクエストデータを取得
-    data = request.get_json()
+    try:
+        # リクエストデータを取得
+        data = request.get_json()
+        print(f"Received data: {data}")  # デバッグ用にリクエストデータを出力
 
-    # メソッド名の変更処理
-    method_mapping = {
-        "eth_getWork": "ethash_getWork",
-        "eth_getHashrate": "ethash_getHashrate",
-        "eth_submitWork": "ethash_submitWork",
-        "eth_submitHashrate": "ethash_submitHashrate"
-    }
+        # リクエストデータがリスト型の場合、最初の要素を使用
+        if isinstance(data, list):
+            data = data[0]
 
-    if data["method"] in method_mapping:
-        data["method"] = method_mapping[data["method"]]
+        # メソッド名の変更処理
+        method_mapping = {
+            "eth_getWork": "ethash_getWork",
+            "eth_getHashrate": "ethash_getHashrate",
+            "eth_submitWork": "ethash_submitWork",
+            "eth_submitHashrate": "ethash_submitHashrate"
+        }
 
-    # Gethにリクエストを転送
-    response = requests.post(GETH_RPC_URL, json=data)
+        if data["method"] in method_mapping:
+            data["method"] = method_mapping[data["method"]]
 
-    # レスポンスをクライアントに返す
-    return jsonify(response.json())
+        # Gethにリクエストを転送
+        response = requests.post(GETH_RPC_URL, json=data)
+        print(f"Forwarded data: {data}")  # デバッグ用に転送データを出力
+
+        # レスポンスをクライアントに返す
+        return jsonify(response.json())
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=PROXY_PORT)
