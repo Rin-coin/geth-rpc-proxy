@@ -19,10 +19,6 @@ def proxy():
         data = request.get_json()
         print(f"Received data: {data}")  # デバッグ用にリクエストデータを出力
 
-        # リクエストデータがリスト型の場合、最初の要素を使用
-        if isinstance(data, list):
-            data = data[0]
-
         # メソッド名の変更処理
         method_mapping = {
             "eth_getWork": "ethash_getWork",
@@ -31,8 +27,14 @@ def proxy():
             "eth_submitHashrate": "ethash_submitHashrate"
         }
 
-        if data["method"] in method_mapping:
-            data["method"] = method_mapping[data["method"]]
+        # リクエストデータがリスト型の場合、各要素を処理
+        if isinstance(data, list):
+            for item in data:
+                if item["method"] in method_mapping:
+                    item["method"] = method_mapping[item["method"]]
+        else:
+            if data["method"] in method_mapping:
+                data["method"] = method_mapping[data["method"]]
 
         # Gethにリクエストを転送
         response = requests.post(GETH_RPC_URL, json=data)
