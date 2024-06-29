@@ -38,8 +38,12 @@ def proxy():
         response = requests.post(GETH_RPC_URL, json=data)
         print(f"Forwarded data: {data}")  # デバッグ用に転送データを出力
 
+        # Gethからのレスポンスデータを取得
+        response_data = response.json()
+        print(f"Received from Geth: {response_data}")  # デバッグ用にGethからのレスポンスデータを出力
+
         # レスポンスをクライアントに返す
-        return jsonify(response.json())
+        return jsonify(response_data)
     except Exception as e:
         print(f"Error: {e}")
         return jsonify({"error": str(e)}), 500
