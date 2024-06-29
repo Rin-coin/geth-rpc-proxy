@@ -10,9 +10,16 @@ def proxy():
     # リクエストデータを取得
     data = request.get_json()
 
-    # メソッドがeth_getWorkの場合、ethash_getWorkに変更
-    if data["method"] == "eth_getWork":
-        data["method"] = "ethash_getWork"
+    # メソッド名の変更処理
+    method_mapping = {
+        "eth_getWork": "ethash_getWork",
+        "eth_getHashrate": "ethash_getHashrate",
+        "eth_submitWork": "ethash_submitWork",
+        "eth_submitHashrate": "ethash_submitHashrate"
+    }
+
+    if data["method"] in method_mapping:
+        data["method"] = method_mapping[data["method"]]
 
     # Gethにリクエストを転送
     response = requests.post(GETH_RPC_URL, json=data)
